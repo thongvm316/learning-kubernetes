@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: story-deployment
+spec:
+  selector:
+    matchLabels:
+      app: story
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: story
+    spec:
+      containers:
+        - name: story
+          image: thongvmdev/story-app:2
+          env:
+            # ---- Use Env directly ----
+            # - name: STORY_FOLDER
+            #   value: 'story111'
+
+            # ---- Use ConfigMap ---
+            - name: STORY_FOLDER
+              valueFrom:
+                configMapKeyRef:
+                  name: data-store-env
+                  key: folder
+          volumeMounts:
+            - mountPath: /app/story
+              name: story-volume
+      volumes:
+        # === Normal Volume ===
+        # - name: story-volume
+        # emptyDir: {}
+        # hostPath:
+        #   path: /data
+        #   type: DirectoryOrCreate
+
+        # === Use Persistent Volume ===
+        - name: story-volume
+          persistentVolumeClaim:
+            claimName: host-pvc
